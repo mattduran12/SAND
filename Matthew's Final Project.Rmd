@@ -38,15 +38,9 @@ rm( list = ls() )
 library( sna )
 library( network )
 
-# I tried to upload to Github but can't seem to workout how to read it in.
-
 data.2017 <-"https://raw.githubusercontent.com/mattduran12/SAND/main/analytic%20sample-2017.csv"
 data.raw.2017 <- read.csv(data.2017, header = TRUE, row.names = NULL)
-
-# create an edgelist which has the first column be officers and second column incidents
 edgelist <- cbind( data.raw.2017[,2], data.raw.2017[,1] )
-
-# coerce to object network
 uof.2017.net <- as.network( 
   edgelist, 
   bipartite = length(      # the bipartite count is equal to the length of 
@@ -54,26 +48,6 @@ uof.2017.net <- as.network(
     ) 
   )
 
-
-# ----
-# Check the code above created the same matrices
-
-# this should be all true values
-# indicating that the ijth element of the first matrix is == 
-# the ijth element of the second matrix
-table( 
-  as.sociomatrix( uof.2017.net ) == as.sociomatrix( uof.2017.net )
-  ) 
-
-set.seed( 605 )
-gplot(
-  uof.2017.net,                                  # our network to plot
-  gmode = "twomode",                                      # indicate it is two modes
-  usearrows = FALSE,
-  vertex.cex=1.5,                                           # size the nodes     
-  label.cex=1.2,                                          # size the labels
-  main="2017"                 # add a title
-)
 
 ```
 
@@ -84,11 +58,7 @@ gplot(
 
 data.2018 <-"https://raw.githubusercontent.com/mattduran12/SAND/main/analytic%20sample-2018.csv"
 data.raw.2018 <- read.csv(data.2018, header = TRUE, row.names = NULL)
-
-# create an edgelist which has the first column be officers and second column incidents
 edgelist <- cbind( data.raw.2018[,2], data.raw.2018[,1] )
-
-# coerce to object network
 uof.2018.net <- as.network( 
   edgelist, 
   bipartite = length(      # the bipartite count is equal to the length of 
@@ -97,25 +67,6 @@ uof.2018.net <- as.network(
   )
 
 
-# ----
-# Check the code above created the same matrices
-
-# this should be all true values
-# indicating that the ijth element of the first matrix is == 
-# the ijth element of the second matrix
-table( 
-  as.sociomatrix( uof.2018.net ) == as.sociomatrix( uof.2018.net )
-  ) 
-
-set.seed( 605 )
-gplot(
-  uof.2018.net,                                  # our network to plot
-  gmode = "twomode",                                      # indicate it is two modes
-  usearrows = FALSE,
-  vertex.cex=1.5,                                           # size the nodes     
-  label.cex=1.2,                                          # size the labels
-  main="2018"                 # add a title
-)
 ```
 
 ##2019 Use of Force Data
@@ -125,11 +76,7 @@ gplot(
 
 data.2019 <-"https://raw.githubusercontent.com/mattduran12/SAND/main/analytic%20sample-2019.csv"
 data.raw.2019 <- read.csv(data.2019, header = TRUE, row.names = NULL)
-
-# create an edgelist which has the first column be officers and second column incidents
 edgelist <- cbind( data.raw.2019[,2], data.raw.2019[,1] )
-
-# coerce to object network
 uof.2019.net <- as.network( 
   edgelist, 
   bipartite = length(      # the bipartite count is equal to the length of 
@@ -137,26 +84,6 @@ uof.2019.net <- as.network(
     ) 
   )
 
-
-# ----
-# Check the code above created the same matrices
-
-# this should be all true values
-# indicating that the ijth element of the first matrix is == 
-# the ijth element of the second matrix
-table( 
-  as.sociomatrix( uof.2019.net ) == as.sociomatrix( uof.2019.net )
-  ) 
-
-set.seed( 605 )
-gplot(
-  uof.2019.net,                                  # our network to plot
-  gmode = "twomode",                                      # indicate it is two modes
-  usearrows = FALSE,
-  vertex.cex=1.5,                                           # size the nodes     
-  label.cex=1.2,                                          # size the labels
-  main="2019"                 # add a title
-)
 ```
 
 ##2020 Use of Force Data
@@ -166,11 +93,7 @@ gplot(
 
 data.2020 <-"https://raw.githubusercontent.com/mattduran12/SAND/main/analytic%20sample-2020.csv"
 data.raw.2020 <- read.csv(data.2020, header = TRUE, row.names = NULL)
-
-# create an edgelist which has the first column be officers and second column incidents
 edgelist <- cbind( data.raw.2020[,2], data.raw.2020[,1] )
-
-# coerce to object network
 uof.2020.net <- as.network( 
   edgelist, 
   bipartite = length(      # the bipartite count is equal to the length of 
@@ -178,26 +101,6 @@ uof.2020.net <- as.network(
     ) 
   )
 
-
-# ----
-# Check the code above created the same matrices
-
-# this should be all true values
-# indicating that the ijth element of the first matrix is == 
-# the ijth element of the second matrix
-table( 
-  as.sociomatrix( uof.2020.net ) == as.sociomatrix( uof.2020.net )
-  ) 
-
-set.seed( 605 )
-gplot(
-  uof.2020.net,                                  # our network to plot
-  gmode = "twomode",                                      # indicate it is two modes
-  usearrows = FALSE,
-  vertex.cex=1.5,                                           # size the nodes     
-  label.cex=1.2,                                          # size the labels
-  main="2020"                 # add a title
-)
 ```
 
 ##2021 Use of Force Data
@@ -207,38 +110,13 @@ gplot(
 
 data.2021 <-"https://raw.githubusercontent.com/mattduran12/SAND/main/analytic%20sample-2021.csv"
 data.raw.2021 <- read.csv(data.2021, header = TRUE, row.names = NULL)
-
-# create an edgelist which has the first column be officers and second column incidents
 edgelist <- cbind( data.raw.2021[,2], data.raw.2021[,1] )
-
-# coerce to object network
 uof.2021.net <- as.network( 
   edgelist, 
   bipartite = length(      # the bipartite count is equal to the length of 
     unique( edgelist[,1] ) # the number of unique ids for officers
     ) 
   )
-
-
-# ----
-# Check the code above created the same matrices
-
-# this should be all true values
-# indicating that the ijth element of the first matrix is == 
-# the ijth element of the second matrix
-table( 
-  as.sociomatrix( uof.2021.net ) == as.sociomatrix( uof.2021.net )
-  ) 
-
-set.seed( 605 )
-gplot(
-  uof.2021.net,                                  # our network to plot
-  gmode = "twomode",                                      # indicate it is two modes
-  usearrows = FALSE,
-  vertex.cex=1.5,                                           # size the nodes     
-  label.cex=1.2,                                          # size the labels
-  main="2021"                 # add a title
-)
 ```
 
 ##2022 Use of Force Data
@@ -248,38 +126,13 @@ gplot(
 
 data.2022 <-"https://raw.githubusercontent.com/mattduran12/SAND/main/analytic%20sample-2022.csv"
 data.raw.2022 <- read.csv(data.2022, header = TRUE, row.names = NULL)
-
-# create an edgelist which has the first column be officers and second column incidents
 edgelist <- cbind( data.raw.2022[,2], data.raw.2022[,1] )
-
-# coerce to object network
 uof.2022.net <- as.network( 
   edgelist, 
   bipartite = length(      # the bipartite count is equal to the length of 
     unique( edgelist[,1] ) # the number of unique ids for officers
     ) 
   )
-
-
-# ----
-# Check the code above created the same matrices
-
-# this should be all true values
-# indicating that the ijth element of the first matrix is == 
-# the ijth element of the second matrix
-table( 
-  as.sociomatrix( uof.2022.net ) == as.sociomatrix( uof.2022.net )
-  ) 
-
-set.seed( 605 )
-gplot(
-  uof.2022.net,                                  # our network to plot
-  gmode = "twomode",                                      # indicate it is two modes
-  usearrows = FALSE,
-  vertex.cex=1.5,                                           # size the nodes     
-  label.cex=1.2,                                          # size the labels
-  main="2022"                 # add a title
-)
 ```
 
 ```{r, echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE}
