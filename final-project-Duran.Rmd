@@ -27,9 +27,7 @@ knitr::opts_chunk$set( echo = TRUE,
 
 <br>
 
-##2017 Use of Force Data
-
-```{r, echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 rm( list = ls() )
 
@@ -46,14 +44,6 @@ uof.2017.net <- as.network(
     ) 
   )
 
-
-```
-
-##2018 Use of Force Data
-
-```{r, echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE}
-
-
 data.2018 <-"https://raw.githubusercontent.com/mattduran12/SAND/main/analytic%20sample-2018.csv"
 data.raw.2018 <- read.csv(data.2018, header = TRUE, row.names = NULL)
 edgelist <- cbind( data.raw.2018[,2], data.raw.2018[,1] )
@@ -63,13 +53,6 @@ uof.2018.net <- as.network(
     unique( edgelist[,1] ) # the number of unique ids for officers
     ) 
   )
-
-
-```
-
-##2019 Use of Force Data
-
-```{r, echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE}
 
 
 data.2019 <-"https://raw.githubusercontent.com/mattduran12/SAND/main/analytic%20sample-2019.csv"
@@ -82,13 +65,6 @@ uof.2019.net <- as.network(
     ) 
   )
 
-```
-
-##2020 Use of Force Data
-
-```{r, echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE}
-
-
 data.2020 <-"https://raw.githubusercontent.com/mattduran12/SAND/main/analytic%20sample-2020.csv"
 data.raw.2020 <- read.csv(data.2020, header = TRUE, row.names = NULL)
 edgelist <- cbind( data.raw.2020[,2], data.raw.2020[,1] )
@@ -99,13 +75,6 @@ uof.2020.net <- as.network(
     ) 
   )
 
-```
-
-##2021 Use of Force Data
-
-```{r, echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE}
-
-
 data.2021 <-"https://raw.githubusercontent.com/mattduran12/SAND/main/analytic%20sample-2021.csv"
 data.raw.2021 <- read.csv(data.2021, header = TRUE, row.names = NULL)
 edgelist <- cbind( data.raw.2021[,2], data.raw.2021[,1] )
@@ -115,12 +84,6 @@ uof.2021.net <- as.network(
     unique( edgelist[,1] ) # the number of unique ids for officers
     ) 
   )
-```
-
-##2022 Use of Force Data
-
-```{r, echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE}
-
 
 data.2022 <-"https://raw.githubusercontent.com/mattduran12/SAND/main/analytic%20sample-2022.csv"
 data.raw.2022 <- read.csv(data.2022, header = TRUE, row.names = NULL)
@@ -133,12 +96,9 @@ uof.2022.net <- as.network(
   )
 ```
 
-```{r, echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 set.seed( 605 )
-
-par( mfrow=c( 1,6 ), 
-     mar=c( 0.1, 0.5, 2, 0.5 ) )
 
 gplot(
   uof.2017.net,                                  # our network to plot
