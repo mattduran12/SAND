@@ -37,7 +37,8 @@ event_ids <- colnames(mat.2017)
 
 actor_gender <- off.attrb.2017$off_gender[match(actor_ids, off.attrb.2017$off_id)]
 set.vertex.attribute(uof.2017.net, "actor_gender", actor_gender)
-
+actor_race <- off.attrb.2017$off_race[match(actor_ids, off.attrb.2017$off_id)]
+set.vertex.attribute(uof.2017.net, "actor_race", actor_race)
 
 
 # Define colors for males and females
@@ -46,7 +47,7 @@ set.vertex.attribute(uof.2017.net, "actor_gender", actor_gender)
 officer_genders <- off.attrb.2017$off_gender[match(actor_ids, off.attrb.2017$off_id)]
 
 # Define colors for males and females
-officer_colors <- ifelse(officer_genders == "Male", "lightblue", "red")
+officer_colors <- ifelse(officer_genders == "Male", "blue", "red")
 
 # Define a color for events
 event_color <- "darkgrey"
@@ -61,6 +62,33 @@ gplot(
   usearrows = FALSE,
   vertex.col = vertex_colors,
   vertex.cex = 1.5,
+  edge.col="grey60",
+  label.cex = 1.2,
+  main = "2017"
+)
+
+# Race
+race_colors <- c(
+  "Asian/Pacific Islander" = "orange",
+  "Alaskan Native/Native American" = "blue",
+  "White" = "green",
+  "Hispanic" = "pink",
+  "Black" = "purple"
+)
+
+officer_races <- off.attrb.2017$off_race[match(actor_ids, off.attrb.2017$off_id)]
+officer_race_colors <- race_colors[officer_races]
+event_color <- "darkgrey"
+vertex_colors <- c(officer_race_colors, rep(event_color, length(event_ids)))
+
+
+gplot(
+  uof.2017.net,
+  gmode = "twomode",
+  usearrows = FALSE,
+  vertex.col = vertex_colors,
+  vertex.cex = 1.5,
+  edge.col="grey60",
   label.cex = 1.2,
   main = "2017"
 )
@@ -69,8 +97,8 @@ gplot(
 
 
 
-# Codes that didn't work but might come in handy later.
 
+# Codes that didn't work but might come in handy later.
 
 off.gender <- off.attrb.2017[,2]
 off.race   <- off.attrb.2017[,3]
