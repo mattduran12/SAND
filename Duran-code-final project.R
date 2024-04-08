@@ -35,8 +35,8 @@ attrs.2017 <- data.raw.2017
 uof.2017.net %v% "Gender" <- attrs.2017[,3]
 uof.2017.net %v% "Race" <- attrs.2017[,4]
 uof.2017.net %v% "Age" <- attrs.2017[,5]
-uof.2017.net %v% "Years of Service" <- attrs.2017[,6]
+uof.2017.net %v% "Years of service" <- attrs.2017[,6]
 uof.2017.net %v% "Cohort" <- attrs.2017[,7]
-uof.2017.net %v% "Number of officers involved" <- attrs.2017[,8]
-uof.2017.net %v% "UoF Count" <- attrs.2017[,9]
-
+uof.2017.net %v% "Number of officers involved per incidnet" <- attrs.2017[,8]
+uof.2017.net %v% "UoF count per officer" <- attrs.2017[,9]
+uof.2017.net %v% "Cohort homophily ratio per incident" <- attrs.2017[,10]
