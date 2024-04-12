@@ -24,6 +24,7 @@ mat.2021 <- as.matrix(uof.2021.net) # coerce network into a matrix
 
 
 # Adding attributes to the network
+
 #gender
 attrs<- data.raw.2021 %>% 
   select( off_id, off_cohort ) %>% 
@@ -32,6 +33,17 @@ attrs<- data.raw.2021 %>%
 
 uof.2021.net %v% "gender" <- c( 
   attrs$off_gender, 
+  rep( NA, dim( as.matrix( uof.2021.net ) )[2] ) # repeat NA to assign to the events
+)
+
+#officer cohort
+attrs<- data.raw.2021 %>% 
+  select( off_id, off_cohort ) %>% 
+  group_by( off_id ) %>% 
+  arrange( off_id )
+
+uof.2021.net %v% "off.cohort" <- c( 
+  attrs$off_cohort, 
   rep( NA, dim( as.matrix( uof.2021.net ) )[2] ) # repeat NA to assign to the events
 )
 
