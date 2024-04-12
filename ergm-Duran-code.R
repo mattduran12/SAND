@@ -1,3 +1,5 @@
+
+
 rm( list = ls() )
 
 library( sna )
@@ -11,7 +13,8 @@ uof.2021.net <- as.network(
   edgelist, 
   bipartite = length(      # the bipartite count is equal to the length of 
     unique( edgelist[,1] ) # the number of unique ids for officers
-  ) 
+  ),
+  directed = FALSE
 )
 
 # Quality assurance; everything matches!
@@ -19,55 +22,46 @@ length( unique( edgelist[,1] ) )  # number of officers
 length( unique( edgelist[,2] ) )  # number of incidents
 dim( as.matrix( uof.2021.net ) )  # these should match
 
+
+length( unique( edgelist[,1] ) )  == dim( as.matrix( uof.2021.net ) )[1] # Should be true   
+length( unique( edgelist[,2] ) )  == dim( as.matrix( uof.2021.net ) )[2] # Should be true   
+
+
 mat.2021 <- as.matrix(uof.2021.net) # coerce network into a matrix
 
 
+#----
+# write loop to execute the attribute assignment
 
-# Adding attributes to the network
 
-#gender
-attrs<- data.raw.2021 %>% 
-  select( off_id, off_cohort ) %>% 
+# first create the data object with the aggregated attributes
+attrs <- data.raw.2021 %>% 
+  
+  # variables you want to have attributes for 
+  select( off_id, off_gender, off_cohort, off_race, off_age ) %>% 
   group_by( off_id ) %>% 
-  arrange( off_id )
+  arrange( off_id ) 
 
-uof.2021.net %v% "gender" <- c( 
-  attrs$off_gender, 
-  rep( NA, dim( as.matrix( uof.2021.net ) )[2] ) # repeat NA to assign to the events
-)
 
-#officer cohort
-attrs<- data.raw.2021 %>% 
-  select( off_id, off_cohort ) %>% 
-  group_by( off_id ) %>% 
-  arrange( off_id )
+# now define the objects to loop through
+attrNames <- c( "off_id", "gender", "off.cohort", "race", "age" )
 
-uof.2021.net %v% "off.cohort" <- c( 
-  attrs$off_cohort, 
-  rep( NA, dim( as.matrix( uof.2021.net ) )[2] ) # repeat NA to assign to the events
-)
 
-#race
-attrs<- data.raw.2021 %>% 
-  select( off_id, off_race ) %>% 
-  group_by( off_id ) %>% 
-  arrange( off_id )
+# loop through the attributes list to assign to the network object
+for( i in 1: length( attrNames ) ){
 
-uof.2021.net %v% "race" <- c( 
-  attrs$off_race, 
-  rep( NA, dim( as.matrix( uof.2021.net ) )[2] ) # repeat NA to assign to the events
-)
+  uof.2021.net %v% attrNames[i] <- c( 
+    attrs[i], 
+    rep( NA, dim( as.matrix( uof.2021.net ) )[2] ) # repeat NA to assign to the events
+  )
 
-#age
-attrs<- data.raw.2021 %>% 
-  select( off_id, off_age ) %>% 
-  group_by( off_id ) %>% 
-  arrange( off_id )
+}
 
-uof.2021.net %v% "age" <- c( 
-  attrs$off_age, 
-  rep( NA, dim( as.matrix( uof.2021.net ) )[2] ) # repeat NA to assign to the events
-)
+# AND SO ON WITH THE OTHER ATTRIBUTES
+
+
+
+
 
 #years of service
 attrs<- data.raw.2021 %>% 
@@ -117,7 +111,14 @@ uof.2021.net
 
 # Code to run ERGM analysis
 
+library( ergm )
 
+mod <- ergm( 
+  uof.2021.net ~ edges 
+  + b1cov( "age" )              # degree effect for age
+  + b1factor( "gender" )        # degree effect for gender
+  + b1factor( "off.cohort" )    # degree effect for cohort
+  )
 
-
+summary( mod )
 
