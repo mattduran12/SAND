@@ -11,7 +11,8 @@ uof.2021.net <- as.network(
   edgelist, 
   bipartite = length(      # the bipartite count is equal to the length of 
     unique( edgelist[,1] ) # the number of unique ids for officers
-  ) 
+  ),
+  directed = FALSE
 )
 
 # Quality assurance; everything matches!
@@ -27,7 +28,7 @@ mat.2021 <- as.matrix(uof.2021.net) # coerce network into a matrix
 
 #gender
 attrs<- data.raw.2021 %>% 
-  select( off_id, off_cohort ) %>% 
+  select( off_id, off_gender ) %>% 
   group_by( off_id ) %>% 
   arrange( off_id )
 
@@ -117,7 +118,14 @@ uof.2021.net
 
 # Code to run ERGM analysis
 
+library( ergm )
 
+mod <- ergm( 
+  uof.2021.net ~ edges 
+  + b1cov( "age" )              # degree effect for age
+  + b1factor( "gender" )        # degree effect for gender
+  + b1factor( "off.cohort" )    # degree effect for cohort
+  )
 
-
+summary( mod )
 
