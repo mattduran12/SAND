@@ -4,9 +4,11 @@ library( sna )
 library( network )
 library( dplyr ) 
 
-data.2021 <-"https://raw.githubusercontent.com/mattduran12/SAND/main/analytic%20sample-2021.csv"
+data.2021 <-"https://raw.githubusercontent.com/mattduran12/SAND/main/final%20data%20(2017-2022).csv"
 data.raw.2021 <- read.csv(data.2021, header = TRUE, row.names = NULL)
 
+data.raw.2021 <- data.raw.2021 %>%
+  filter(year == 2021)
 
 
 edgelist <- cbind( data.raw.2021[,2], data.raw.2021[,1] )
@@ -202,6 +204,7 @@ net %v% "age" <- data.raw.2021$off_age[match(network.vertex.names(net), data.raw
 net %v% "yos" <- data.raw.2021$off_yos[match(network.vertex.names(net), data.raw.2021$off_id)]
 net %v% "uof.count" <- data.raw.2021$off_uof_count[match(network.vertex.names(net), data.raw.2021$off_id)]
 net %v% "off_id" <- data.raw.2021$off_id[match(network.vertex.names(net), data.raw.2021$off_id)]
+net %v% "cohort" <- data.raw.2021$off_cohort[match(network.vertex.names(net), data.raw.2021$off_id)]
 
 officer_genders <- data.raw.2021$off_gender[match(network.vertex.names(net), data.raw.2021$off_id)]
 officer_races   <- data.raw.2021$off_race[match(actor_ids, data.raw.2021$off_id)]
@@ -228,7 +231,7 @@ edge.rescale <- function(attr, low, high) {
 }
 
 edge.shade <- function( uniMat ){
-  net.edges <- edge.rescale( uniMat, 0.2, 1 )
+  net.edges <- edge.rescale( uniMat, 0.01, 1 )
   vec.to.color <- as.vector( abs( net.edges ) )
   vec.to.color <- 1 - vec.to.color # subtract 1 to flip the grey function scale.
   edge.cols <- grey( vec.to.color )
@@ -238,16 +241,6 @@ edge.shade <- function( uniMat ){
 # Rescale the continuous edge attribute for color and line width
 edge_colors <- edge.shade(get.edge.attribute(net, "Ties"))
 edge_widths <- edge.rescale(get.edge.attribute(net, "Ties"), 1, 10)
-
-gplot(
-  net,
-  gmode = "graph",
-  edge.col = edge_colors,
-  edge.lwd = edge_widths,
-  vertex.col = cols.gender,
-  main = "Shared Use of Force Incidents in 2021",
-  sub = "Nodes are sized by degree centrality scores, and edges are colored and sized by the continuous attribute"
-)
 
 
 # Network descriptive statistics
@@ -273,6 +266,29 @@ cent.dat <- data.frame(
   degree = deg,
   closeness = close,
   betweenness = btwn
+)
+
+
+set.seed(500)
+gplot(
+  net,
+  gmode = "graph",
+  edge.col = edge_colors,
+  edge.lwd = edge_widths,
+  vertex.col = cols.gender,
+  vertex.cex = 0.5,
+  main = "Shared Use of Force Incidents in 2021 (sized by degree centrality)",
+)
+
+set.seed(500)
+gplot(
+  net,
+  gmode = "graph",
+  edge.col = edge_colors,
+  edge.lwd = edge_widths,
+  vertex.col = cols.gender,
+  vertex.cex = rescale(btwn, 0.5, 2),
+  main = "Shared Use of Force Incidents in 2021 (sized by betweenness centrality)",
 )
 
 # use the mean() function to calculate the means
@@ -317,10 +333,52 @@ round( mean( degree( net, gmode = "graph", cmode = "degree" )[net %v% "race" == 
 
 # This is where I am with the 
 library(ergm)
-tie.net <- ergm( 
+gender.m <- ergm(
   net ~ edges 
-  + nodecov("age")
+  + nodefactor( "gender" ),
+  control = control.ergm(
+    seed = 605 ) 
 ) 
 
-summary( tie.net )
+race.m <- ergm(
+  net ~ edges 
+  + nodefactor( "race" ),
+  control = control.ergm(
+    seed = 605 ) 
+) 
 
+age.m <- ergm(
+  net ~ edges 
+  + nodecov( "age" ),
+  control = control.ergm(
+    seed = 605 ) 
+) 
+
+yos.m <- ergm(
+  net ~ edges 
+  + nodecov( "yos" ),
+  control = control.ergm(
+    seed = 605 ) 
+) 
+
+cohort.m <- ergm(
+  net ~ edges 
+  + absdiff( "cohort" ),
+  control = control.ergm(
+    seed = 605 ) 
+) 
+
+uof.m <- ergm(
+  net ~ edges 
+  + nodecov( "uof.count" ),
+  control = control.ergm(
+    seed = 605 ) 
+) 
+
+
+summary(gender.m)
+summary(race.m)
+summary(age.m)
+summary(yos.m)
+summary(cohort.m)
+summary(uof.m)
