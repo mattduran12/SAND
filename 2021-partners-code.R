@@ -331,7 +331,39 @@ round( mean( degree( net, gmode = "graph", cmode = "degree" )[net %v% "race" == 
 round( mean( degree( net, gmode = "graph", cmode = "degree" )[net %v% "race" == 4] ), 2 ) # Hispanic
 round( mean( degree( net, gmode = "graph", cmode = "degree" )[net %v% "race" == 5] ), 2 ) # White
 
-# This is where I am with the 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Analysis
+
+
+age <- net %v% "age"
+yos <- net %v% "yos"
+cohort <- net %v% "cohort"
+uof  <- net %v% "uof.count"
+gender <- net%v% "gender"
+
+
+# Create a data frame from node attributes
+net_data <- data.frame(age, yos, cohort, uof, gender)
+cor <- cor(net_data) #
+print(cor) # high correlations among age, yos, and cohort.
+
+# Pick one that is conceptually interesting for topic; run sensitivity analyses
+
+
 library(ergm)
 gender.m <- ergm(
   net ~ edges 
@@ -376,9 +408,78 @@ uof.m <- ergm(
 ) 
 
 
+
 summary(gender.m)
 summary(race.m)
 summary(age.m)
 summary(yos.m)
 summary(cohort.m)
 summary(uof.m)
+
+
+t1.mod <- ergm(
+  net ~ edges 
+  + gwesp( decay = 0.25, fixed = TRUE ),
+  control = control.ergm(
+    seed = 605 ) 
+) 
+
+summary( 
+  net            # the network we want summary info on 
+  ~ edges           # give the edges; note the ~
+  + degree( 0:15 )   # count of degrees 0 through 5
+  + triangle        # count of triangles
+)
+
+sim2 <- simulate(
+  t1.mod,                # the model to simulate from
+  nsim = 500,               # ask for 500 simulations
+  monitor = ~ triangle,     # we want it to focus on the triangles
+  output = "stats",           # just keep the stats, not the networks
+  seed = 605                # set the seed to reproduce the results
+)
+
+hist( 
+  sim2[,"triangle"],  # plot the triangle counts from each simulation
+  main = "Simulations \n (X shows observed network)", # add a title
+  xlim = c( 0,500 ), # set the x axis limits
+  ylim = c( 0,100 ), # set the y axis limits
+  xlab = "Number of triangles",  # label the x axis
+  ylab = "Number of simulated networks" #label the y axes 
+)
+
+# add a mark where the observed count is
+points(
+  summary( 
+    net ~ triangle ),
+  4, 
+  pch="X", 
+  cex=2, 
+  col="red"
+)
+
+
+m2.goff <- gof(
+  t1.mod,               # our estimated model
+  GOF = ~degree            # the degree distribution 
+  + espartners           # the edge-wise shared partners distribution
+  + distance,            # the geodesic distance distribution
+  verbose = TRUE,          # we want it to tell us what it is doing while it is doing it
+  control = control.gof.ergm( seed = 605 ) # set the seed to reproduce results 
+)
+
+par( mfrow = c( 2,2 ) )
+
+plot( m2.goff )
+
+
+
+
+
+
+
+
+
+
+
+
