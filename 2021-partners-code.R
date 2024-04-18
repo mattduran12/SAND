@@ -419,7 +419,7 @@ summary(uof.m)
 
 t1.mod <- ergm(
   net ~ edges
-  + nodecov( "uof")
+  + nodecov( "uof.count")
   + absdiff( "cohort")
   + gwesp( decay = 0.25, fixed = TRUE ),
   control = control.ergm(
