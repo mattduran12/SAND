@@ -8,7 +8,9 @@ data.2021 <-"https://raw.githubusercontent.com/mattduran12/SAND/main/final%20dat
 data.raw.2021 <- read.csv(data.2021, header = TRUE, row.names = NULL)
 
 data.raw.2021 <- data.raw.2021 %>%
-  filter(year == 2021)
+  filter(year == 2022)
+data.raw.2021 <- data.raw.2021 %>%
+  #filter(off_race >2) # excludes Alaskan Native/ and Asian pacificlander for ERGM
 
 
 edgelist <- cbind( data.raw.2021[,2], data.raw.2021[,1] )
@@ -29,7 +31,7 @@ actor_ids <- rownames(mat.2021)
 event_ids <- colnames(mat.2021)
 
 
-# Bipartite Network Statistics
+# Bipartite Network Statisticssumm
 
 # Caculating network statistics
 
@@ -44,9 +46,7 @@ N <- dim( matrix )[1]
 M <- dim( matrix )[2]
 # calculate the density
 density.matrix <- L / ( N * M )
-# check it out
 density.matrix
-
 
 
 actor.deg <- rowSums( mat.2021 )
@@ -57,11 +57,8 @@ event.deg # second set of nodes
 
 # mean degree for actors
 mean.actor.deg <- L / N
-
 # mean degree for events
 mean.event.deg <- L / M
-
-# an alternative is to just use the mean() function with the degree data
 mean( actor.deg )
 mean( event.deg )
 
@@ -75,7 +72,52 @@ event.size
 mean( actor.size )
 mean( event.size ) # shouldn't these values be different?
 
-# Projections
+# Check the dyadic clustering
+#library(tnet)
+#uof.2021.tnet <- as.tnet( as.matrix( uof.2021.net ) )
+#reinforcement_tm(uof.2021.tnet)
+
+
+### Bipartite graph for export
+# Mapping attributes to objects
+officer_genders <- data.raw.2021$off_gender[match(actor_ids, data.raw.2021$off_id)]
+officer_uof_count <- data.raw.2021$off_uof_count[match(actor_ids, data.raw.2021$off_id)]
+officer_ages <- data.raw.2021$off_age[match(actor_ids, data.raw.2021$off_id)]
+officer_yos <- data.raw.2021$off_yos[match(actor_ids, data.raw.2021$off_id)]
+officer_uof_count <- data.raw.2021$off_uof_count[match(actor_ids, data.raw.2021$off_id)]
+inc_tot_off <- data.raw.2021$inc_off_count[match(event_ids, data.raw.2021$inc_id)]
+inc_coh_hom <- data.raw.2021$inc_coh_homophily_ratio[match(event_ids, data.raw.2021$inc_id)]
+
+# Rescale function for sizing nodes
+rescale <- function( nchar, low, high ){
+  min_d <- min( nchar )
+  max_d <- max( nchar )
+  rscl  <- ( ( high - low )*( nchar - min_d ) ) / ( max_d - min_d ) + low
+  rscl
+}
+
+# Attributes objects
+v.size.age <- c( officer_ages, rep(0.5, length(event_ids))) 
+v.size.yos <- c( officer_yos, rep(0.5, length(event_ids))) 
+v.size.uof <- c( officer_uof_count, rep(1, length(event_ids)))
+v.size.inc <- c(rep(1, length(actor_ids)), rep(inc_tot_off, length(event_ids)))
+v.size.inc.hratio <- c(rep(0.25, length(actor_ids)), rescale(rep(inc_coh_hom, length(event_ids)), 0.5, 2.75))
+
+
+# Map the colors to the nodes; change attribute object as needed.
+cols.gender <- ifelse(officer_genders == 1, "#FFB310", "#990033") # 1 equals females
+event_color <- "darkgreen"
+vertex_colors <- c(cols.gender, rep(event_color, length(event_ids)))
+
+set.seed(500)
+gplot(
+  uof.2021.net,
+  gmode = "twomode",
+  usearrows = FALSE,
+  edge.col = "grey",           # note the usage here
+  vertex.col = vertex_colors,
+  vertex.cex = v.size.inc.hratio,
+)
 
 
 # identify the number of police officers
@@ -97,12 +139,8 @@ mat.2021.P.net <-as.network(
   directed = FALSE)
 
 
-deg <- degree(
-  mat.2021.P.net,
-  gmode = "graph",
-  cmode = "degree"
-)
 
+deg <- degree(mat.2021.P.net, gmode = "graph", cmode = "degree")
 # set the number of nodes in the network
 g <- dim( as.matrix( mat.2021.P.net ) )[1]
 # raw closeness centrality
@@ -130,8 +168,16 @@ cent.tab <- data.frame(
   close = round( mean.close, 3 ),
   between = round( mean.btwn, 3 )
 )
+
 # print the table
 cent.tab
+max(deg) 
+
+min(deg) # shouldn't the minimum degree be 1? Single-officer incidents were removed
+# from the final sample, so every officers should be connected with at least one other person.
+
+density(mat.2021.P) # Is this the network density? 
+
 
 rescale <- function( nchar, low, high ){
   min_d <- min( nchar )
@@ -156,18 +202,62 @@ edge.shade <- function( uniMat ){
   return( edge.cols )
 }
 
+
+
+set.seed(500)
+gplot(
+  mat.2021.P.net,
+  gmode = "graph",
+  edge.col = "lightgrey",           # note the usage here
+  vertex.col = "brown",
+  vertex.cex = 0.5
+  #vertex.cex = rescale(deg, 0.5, 2),
+)
+
 set.seed(500)
 gplot(
   mat.2021.P.net,
   gmode = "graph",
   edge.col = edge.shade( mat.2021.P ),           # note the usage here
   edge.lwd = edge.rescale( mat.2021.P, 0.3, 10 ), # note the usage here
-  vertex.col = "lightblue",
-  vertex.cex = rescale(deg, 0.5, 2),
-  main = "Shared Use of Force Incidents in 2021",
-  sub = "Nodes are sized by degree centrality scores, and edges are shaded by number of ties"
+  vertex.col = "brown",
+  vertex.cex = 0.5
+  #vertex.cex = rescale(deg, 0.5, 2),
 )
 
+
+
+# Assigning attributes to the actcors projection 
+
+# Adding attributes to the network
+
+mat.2021.P.net %v% "gender" <- data.raw.2021$off_gender[match(network.vertex.names(mat.2021.P.net), data.raw.2021$off_id)]
+mat.2021.P.net %v% "race" <- data.raw.2021$off_race[match(network.vertex.names(mat.2021.P.net), data.raw.2021$off_id)]
+mat.2021.P.net %v% "age" <- data.raw.2021$off_age[match(network.vertex.names(mat.2021.P.net), data.raw.2021$off_id)]
+mat.2021.P.net %v% "yos" <- data.raw.2021$off_yos[match(network.vertex.names(mat.2021.P.net), data.raw.2021$off_id)]
+mat.2021.P.net %v% "uof.count" <- data.raw.2021$off_uof_count[match(network.vertex.names(mat.2021.P.net), data.raw.2021$off_id)]
+mat.2021.P.net %v% "off_id" <- data.raw.2021$off_id[match(network.vertex.names(mat.2021.P.net), data.raw.2021$off_id)]
+mat.2021.P.net %v% "cohort" <- data.raw.2021$off_cohort[match(network.vertex.names(mat.2021.P.net), data.raw.2021$off_id)]
+
+officer_genders <- data.raw.2021$off_gender[match(network.vertex.names(mat.2021.P.net), data.raw.2021$off_id)]
+officer_races   <- data.raw.2021$off_race[match(actor_ids, data.raw.2021$off_id)]
+cols.gender <- ifelse(officer_genders == 1, "#FFB310", "#990033") # 1 equals females
+id.labels <- mat.2021.P.net %v% "off_id"
+
+
+set.seed(500)
+gplot(
+  mat.2021.P.net,
+  gmode = "graph",
+  edge.col = edge.shade( mat.2021.P ),           # note the usage here
+  edge.lwd = edge.rescale( mat.2021.P, 0.3, 10 ), # note the usage here
+  vertex.col = cols.gender,
+  vertex.cex = rescale(get.vertex.attribute(mat.2021.P.net, "uof.count"), 0.5, 2),
+)
+
+
+# Hold off on making "partner" networks.
+# Your nodes represent pairs of officers.
 
 combinations <- which(mat.2021.P > 1, arr.ind = TRUE)
 actor_pairs <- data.frame(
@@ -277,6 +367,7 @@ gplot(
   edge.lwd = edge_widths,
   vertex.col = cols.gender,
   vertex.cex = 0.5,
+  label = get.vertex.attribute(net,),
   main = "Shared Use of Force Incidents in 2021 (sized by degree centrality)",
 )
 
@@ -319,41 +410,33 @@ top_ties_nodes_object <- top_ties_nodes
 print(top_ties_nodes_object)
 
 
+
+
+
+
 # Code to run ERGM analysis
 # Degree distribution for gender. This compares the mean degree for each group
-round( mean( degree( net, gmode = "graph", cmode = "degree" )[net %v% "gender" == 1] ), 2 ) # female
-round( mean( degree( net, gmode = "graph", cmode = "degree" )[net %v% "gender" == 0] ), 2 ) # male
+round( mean( degree( mat.2021.P.net, gmode = "graph", cmode = "degree" )[mat.2021.P.net %v% "gender" == 1] ), 2 ) # female
+round( mean( degree( mat.2021.P.net, gmode = "graph", cmode = "degree" )[mat.2021.P.net %v% "gender" == 0] ), 2 ) # male
 
 # Degree distribution for race This compares the mean degree for each group
-round( mean( degree( net, gmode = "graph", cmode = "degree" )[net %v% "race" == 1] ), 2 ) # Alask/Nat
-round( mean( degree( net, gmode = "graph", cmode = "degree" )[net %v% "race" == 2] ), 2 ) # Asian/Paci
-round( mean( degree( net, gmode = "graph", cmode = "degree" )[net %v% "race" == 3] ), 2 ) # Black
-round( mean( degree( net, gmode = "graph", cmode = "degree" )[net %v% "race" == 4] ), 2 ) # Hispanic
-round( mean( degree( net, gmode = "graph", cmode = "degree" )[net %v% "race" == 5] ), 2 ) # White
-
-
-
-
-
-
-
-
-
-
-
-
-
+round( mean( degree( mat.2021.P.net, gmode = "graph", cmode = "degree" )[mat.2021.P.net %v% "race" == 1] ), 2 ) # Alask/Nat
+round( mean( degree( mat.2021.P.net, gmode = "graph", cmode = "degree" )[mat.2021.P.net %v% "race" == 2] ), 2 ) # Asian/Paci
+round( mean( degree( mat.2021.P.net, gmode = "graph", cmode = "degree" )[mat.2021.P.net %v% "race" == 3] ), 2 ) # Black
+round( mean( degree( mat.2021.P.net, gmode = "graph", cmode = "degree" )[mat.2021.P.net %v% "race" == 4] ), 2 ) # Hispanic
+round( mean( degree( mat.2021.P.net, gmode = "graph", cmode = "degree" )[mat.2021.P.net %v% "race" == 5] ), 2 ) # White
 
 
 
 # Analysis
 
 
-age <- net %v% "age"
-yos <- net %v% "yos"
-cohort <- net %v% "cohort"
-uof  <- net %v% "uof.count"
-gender <- net%v% "gender"
+age <- mat.2021.P.net %v% "age"
+yos <- mat.2021.P.net %v% "yos"
+cohort <- mat.2021.P.net %v% "cohort"
+uof  <- mat.2021.P.net %v% "uof.count"
+gender <- mat.2021.P.net%v% "gender"
+race <- mat.2021.P.net%v% "race"
 
 
 # Create a data frame from node attributes
@@ -363,78 +446,121 @@ print(cor) # high correlations among age, yos, and cohort.
 
 # Pick one that is conceptually interesting for topic; run sensitivity analyses
 
+# Model that is exported
+library(broom)
+library(ergm)
+m1 <- ergm(
+  mat.2021.P.net ~ edges,
+  control = control.ergm(
+    seed = 605 ) 
+) 
+
+summary(m1)
+tidy_results <- tidy(m1)
+write.csv(tidy_results, "m1-edges only.csv", row.names = FALSE)
+
+
+m2 <- ergm(
+  mat.2021.P.net ~ edges
+  + nodefactor( "gender" )
+  + nodematch( "race" )
+  + nodecov( "uof.count")
+  + absdiff( "cohort" )
+,
+  control = control.ergm(
+    seed = 605 ) 
+) 
+
+summary(m2)
+tidy_results <- tidy(m2)
+write.csv(tidy_results, "m2-best-model.csv", row.names = FALSE)
+
+
+
+# This takes too long to run! Anyway to speed it up?
+m3 <- ergm(
+  mat.2021.P.net ~ edges
+  + nodefactor( "gender")
+  + nodematch( "race")
+  + nodecov( "uof.count" )
+  + nodecov( "yos" )
+  + nodecov( "age" )
+  + absdiff( "cohort" ),
+#  + gwesp( decay = 0.25, fixed = TRUE),
+  control = control.ergm(
+    seed = 605 ) 
+) 
+
+summary(m3)
+tidy_results <- tidy(m3)
+write.csv(tidy_results, "m3-full-model.csv", row.names = FALSE)
+
+
+m4 <- ergm(
+  mat.2021.P.net ~ edges
+  + nodefactor( "gender")
+  + nodematch( "race")
+  + nodecov( "uof.count" )
+  + absdiff( "cohort" )
+  + gwesp( decay = 0.25, fixed = TRUE),
+  control = control.ergm(
+    seed = 605 ) 
+) 
+
+summary(m4)
+tidy_results <- tidy(m3)
+write.csv(tidy_results, "m4-gwesp-model.csv", row.names = FALSE)
+
+###### 
+
+# Predicting the number of ties between i and j
+
+library( ergm.count )
+mat.2021.P.net <- as.network( mat.2021.P,
+                              ignore.eval = FALSE,     # tells function to not ignore the values of the input matrix
+                              names.eval = "incidents" # sets the name for the edge weights
+)
+mat.2021.P.net %v% "gender" <- data.raw.2021$off_gender[match(network.vertex.names(mat.2021.P.net), data.raw.2021$off_id)]
+mat.2021.P.net %v% "race" <- data.raw.2021$off_race[match(network.vertex.names(mat.2021.P.net), data.raw.2021$off_id)]
+mat.2021.P.net %v% "age" <- data.raw.2021$off_age[match(network.vertex.names(mat.2021.P.net), data.raw.2021$off_id)]
+mat.2021.P.net %v% "yos" <- data.raw.2021$off_yos[match(network.vertex.names(mat.2021.P.net), data.raw.2021$off_id)]
+mat.2021.P.net %v% "uof.count" <- data.raw.2021$off_uof_count[match(network.vertex.names(mat.2021.P.net), data.raw.2021$off_id)]
+mat.2021.P.net %v% "off_id" <- data.raw.2021$off_id[match(network.vertex.names(mat.2021.P.net), data.raw.2021$off_id)]
+mat.2021.P.net %v% "cohort" <- data.raw.2021$off_cohort[match(network.vertex.names(mat.2021.P.net), data.raw.2021$off_id)]
+
+
+valueergm <- ergm( mat.2021.P.net 
+                    ~ sum 
+                    + nodefactor( "gender")
+                    + nodefactor( "race")
+                    + nodecov( "yos" )
+                    + nodecov( "age" )
+                    + absdiff( "uof.count")
+                    + absdiff( "cohort" ),
+                    response = "incidents",
+                    reference = ~Poisson, 
+                    control = control.ergm(
+                      seed = 605 )  )
+summary(valueergm)
+
+summary(valueergm)
+tidy_results <- tidy(valueergm)
+write.csv(tidy_results, "m4.csv", row.names = FALSE)
+
+
+
 
 library(ergm)
-gender.m <- ergm(
-  net ~ edges 
-  + nodefactor( "gender" ),
-  control = control.ergm(
-    seed = 605 ) 
-) 
-
-race.m <- ergm(
-  net ~ edges 
-  + nodefactor( "race" ),
-  control = control.ergm(
-    seed = 605 ) 
-) 
-
-age.m <- ergm(
-  net ~ edges 
-  + nodecov( "age" ),
-  control = control.ergm(
-    seed = 605 ) 
-) 
-
-yos.m <- ergm(
-  net ~ edges 
-  + nodecov( "yos" ),
-  control = control.ergm(
-    seed = 605 ) 
-) 
-
-cohort.m <- ergm(
-  net ~ edges 
-  + absdiff( "cohort" ),
-  control = control.ergm(
-    seed = 605 ) 
-) 
-
-uof.m <- ergm(
-  net ~ edges 
-  + nodecov( "uof.count" ),
-  control = control.ergm(
-    seed = 605 ) 
-) 
-
-
-
-summary(gender.m)
-summary(race.m)
-summary(age.m)
-summary(yos.m)
-summary(cohort.m)
-summary(uof.m)
-
-
-t1.mod <- ergm(
-  net ~ edges
-  + nodecov( "uof.count")
-  + absdiff( "cohort")
-  + gwesp( decay = 0.25, fixed = TRUE ),
-  control = control.ergm(
-    seed = 605 ) 
-) 
 
 summary( 
-  net            # the network we want summary info on 
+  mat.2021.P.net            # the network we want summary info on 
   ~ edges           # give the edges; note the ~
   + degree( 0:15 )   # count of degrees 0 through 5
   + triangle        # count of triangles
 )
 
 sim2 <- simulate(
-  t1.mod,                # the model to simulate from
+  m2,                # the model to simulate from
   nsim = 500,               # ask for 500 simulations
   monitor = ~ triangle,     # we want it to focus on the triangles
   output = "stats",           # just keep the stats, not the networks
@@ -444,8 +570,8 @@ sim2 <- simulate(
 hist( 
   sim2[,"triangle"],  # plot the triangle counts from each simulation
   main = "Simulations \n (X shows observed network)", # add a title
-  xlim = c( 0,500 ), # set the x axis limits
-  ylim = c( 0,100 ), # set the y axis limits
+  xlim = c(300,1000 ), # set the x axis limits
+  ylim = c( 0,500 ), # set the y axis limits
   xlab = "Number of triangles",  # label the x axis
   ylab = "Number of simulated networks" #label the y axes 
 )
@@ -453,16 +579,16 @@ hist(
 # add a mark where the observed count is
 points(
   summary( 
-    net ~ triangle ),
+    mat.2021.P.net ~ triangle ),
   4, 
   pch="X", 
   cex=2, 
   col="red"
 )
 
-
-m2.goff <- gof(
-  t1.mod,               # our estimated model
+library(ergm)
+m1.gof <- gof(
+  m2,               # our estimated model
   GOF = ~degree            # the degree distribution 
   + espartners           # the edge-wise shared partners distribution
   + distance,            # the geodesic distance distribution
@@ -472,7 +598,7 @@ m2.goff <- gof(
 
 par( mfrow = c( 2,2 ) )
 
-plot( m2.goff )
+plot( m1.gof )
 
 
 
